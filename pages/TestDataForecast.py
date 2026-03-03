@@ -166,7 +166,7 @@ st.markdown("""
 # ── Back button ────────────────────────────────────────────────────────────────
 st.markdown('<div class="back-btn">', unsafe_allow_html=True)
 if st.button("← Back", key="back"):
-    st.switch_page("Main.py")
+    st.switch_page("streamlit_app.py")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
