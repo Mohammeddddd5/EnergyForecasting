@@ -213,14 +213,14 @@ ALL_FEATURE_COLS = BASE_FEATURE_COLS + COMPANY_COLS
 # ── Load resources ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_model():
-    base = os.path.dirname(__file__)
-    with open(os.path.join(base, "..", "energy_consumption_model.pkl"), "rb") as f:
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    with open(os.path.join(base, "energy_consumption_model.pkl"), "rb") as f:
         return pickle.load(f)
 
 @st.cache_data
 def load_data():
-    base = os.path.dirname(__file__)
-    df = pd.read_csv(os.path.join(base, "..", "PJM_Energy_Consumption_Preprocessed.csv"))
+    base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    df = pd.read_csv(os.path.join(base, "test_data.csv"))
     if "Datetime" in df.columns:
         df.drop(columns=["Datetime"], inplace=True)
     df["_dt"] = pd.to_datetime(dict(year=df["Year"], month=df["Month"],
