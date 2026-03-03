@@ -97,7 +97,7 @@ with col2:
     st.markdown('<div class="subtitle">Select a module to begin</div>', unsafe_allow_html=True)
 
     if st.button("Forecast Using Test Data", use_container_width=True):
-        st.switch_page("Pages/TestDataForecast.py")
+        st.switch_page("pages/TestDataForecast.py")
     st.write("")
     if st.button("Custom Forecasting", use_container_width=True):
-        st.switch_page("Pages/CustomDataForecast.py")
+        st.switch_page("pages/CustomDataForecast.py")
