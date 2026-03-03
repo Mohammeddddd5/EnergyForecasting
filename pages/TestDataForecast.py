@@ -11,152 +11,165 @@ st.set_page_config(page_title="Energy Forecast — Predictions", layout="wide")
 
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Lato:wght@300;400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
 
-        .stApp { background: #03080f; }
-
+        .stApp { background: #020a18; }
+        html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
         header[data-testid="stHeader"] { background: transparent !important; }
         button[data-testid="collapsedControl"] { opacity: 0 !important; pointer-events: none !important; }
 
         .block-container {
-            padding-top: 2.5rem !important;
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
-            max-width: 1200px !important;
+            padding-top: 2.8rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+            max-width: 1100px !important;
         }
 
         .page-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 2.6rem;
-            font-weight: 700;
-            color: #cce4ff;
-            margin-bottom: 0.2rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3.2rem;
+            font-weight: 600;
+            color: #f0f7ff;
             text-align: center;
+            letter-spacing: 0.02em;
+            line-height: 1.1;
+            margin-bottom: 0;
         }
 
         .page-subtitle {
-            font-family: 'Lato', sans-serif;
-            font-size: 0.88rem;
-            color: rgba(140, 190, 255, 0.55);
-            letter-spacing: 0.25em;
-            text-transform: uppercase;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem;
             font-weight: 300;
-            margin-bottom: 2rem;
+            color: rgba(180, 215, 255, 0.45);
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
             text-align: center;
+            margin-top: 0.5rem;
+            margin-bottom: 0.6rem;
         }
 
         .divider {
-            width: 40px;
-            height: 2px;
-            background: rgba(100, 180, 255, 0.4);
-            margin: 0.5rem auto 1.1rem auto;
+            width: 32px;
+            height: 1px;
+            background: rgba(140, 200, 255, 0.35);
+            margin: 0.7rem auto 1.6rem auto;
         }
 
         .section-label {
-            font-family: 'Lato', sans-serif;
-            font-size: 0.78rem;
-            letter-spacing: 0.28em;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 500;
+            letter-spacing: 0.32em;
             text-transform: uppercase;
-            color: rgba(140, 190, 255, 0.45);
-            margin-bottom: 0.6rem;
+            color: rgba(140, 200, 255, 0.38);
             text-align: center;
+            margin-bottom: 0.7rem;
         }
 
         label[data-testid="stWidgetLabel"] p {
-            font-family: 'Lato', sans-serif !important;
-            font-size: 0.72rem !important;
-            letter-spacing: 0.15em !important;
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.65rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.22em !important;
             text-transform: uppercase !important;
-            color: rgba(140, 190, 255, 0.6) !important;
+            color: rgba(160, 210, 255, 0.5) !important;
         }
 
         .metric-row {
             display: flex;
-            gap: 0;
-            border: 1px solid rgba(80,150,255,0.15);
-            border-radius: 2px;
+            border: 1px solid rgba(100, 170, 255, 0.12);
+            border-radius: 1px;
             overflow: hidden;
-            margin-top: 0.7rem;
+            margin-top: 1rem;
         }
         .metric-cell {
             flex: 1;
-            padding: 1.2rem 1.5rem;
-            background: rgba(15, 35, 80, 0.4);
-            border-right: 1px solid rgba(80,150,255,0.12);
+            padding: 1.3rem 1.6rem;
+            background: rgba(10, 30, 70, 0.35);
+            border-right: 1px solid rgba(100, 170, 255, 0.1);
             text-align: center;
         }
         .metric-cell:last-child { border-right: none; }
         .metric-label {
-            font-family: 'Lato', sans-serif;
-            font-size: 0.68rem;
-            letter-spacing: 0.22em;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 500;
+            letter-spacing: 0.25em;
             text-transform: uppercase;
-            color: rgba(120, 170, 255, 0.5);
-            margin-bottom: 0.4rem;
+            color: rgba(140, 200, 255, 0.45);
+            margin-bottom: 0.5rem;
         }
         .metric-value {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.85rem;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.1rem;
             font-weight: 600;
-            color: #cce4ff;
+            color: #eaf4ff;
+            line-height: 1;
         }
         .metric-sub {
-            font-family: 'Lato', sans-serif;
-            font-size: 0.65rem;
-            color: rgba(140, 190, 255, 0.35);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.6rem;
+            font-weight: 300;
+            color: rgba(140, 200, 255, 0.28);
             letter-spacing: 0.1em;
-            margin-top: 0.2rem;
+            margin-top: 0.3rem;
         }
 
-        .stButton > button {
-            font-family: 'Lato', sans-serif !important;
-            font-size: 0.76rem !important;
+        .back-btn > button {
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.62rem !important;
             font-weight: 400 !important;
             letter-spacing: 0.2em !important;
             text-transform: uppercase !important;
-            color: #8ac4ff !important;
-            background: rgba(30, 90, 180, 0.15) !important;
-            border: 1.5px solid rgba(80, 160, 255, 0.4) !important;
+            color: rgba(140, 200, 255, 0.4) !important;
+            background: transparent !important;
+            border: 1px solid rgba(100, 170, 255, 0.15) !important;
             border-radius: 0px !important;
-            padding: 0.75rem 1.5rem !important;
-            transition: all 0.25s ease !important;
+            padding: 0.35rem 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        .back-btn > button:hover {
+            color: #d0eaff !important;
+            border-color: rgba(100, 170, 255, 0.4) !important;
+            background: rgba(100, 170, 255, 0.05) !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .stButton > button {
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.68rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.25em !important;
+            text-transform: uppercase !important;
+            color: #cce8ff !important;
+            background: rgba(30, 90, 200, 0.18) !important;
+            border: 1px solid rgba(100, 170, 255, 0.4) !important;
+            border-radius: 0px !important;
+            padding: 0.8rem 1.5rem !important;
+            transition: all 0.22s ease !important;
             box-shadow: none !important;
         }
         .stButton > button:hover {
             color: #ffffff !important;
-            background: rgba(50, 130, 255, 0.25) !important;
-            border-color: rgba(100, 200, 255, 0.85) !important;
+            background: rgba(60, 130, 255, 0.28) !important;
+            border-color: rgba(160, 210, 255, 0.8) !important;
             transform: translate(-2px, -2px) !important;
-            box-shadow: 3px 3px 0px rgba(80, 160, 255, 0.18) !important;
+            box-shadow: 3px 3px 0px rgba(100, 170, 255, 0.15) !important;
         }
-        .back-btn > button { 
-            font-family: 'Lato', sans-serif !important; 
-            font-size: 0.68rem !important; 
-            letter-spacing: 0.18em !important; 
-            text-transform: uppercase !important; 
-            color: rgba(140, 190, 255, 0.5) !important; 
-            background: transparent !important; 
-            border: 1px solid rgba(80, 160, 255, 0.2) !important; 
-            border-radius: 0px !important; 
-            padding: 0.4rem 1rem !important; 
-            margin-bottom: 1rem !important; 
-        }
-        .back-btn > button:hover { 
-            color: #cce4ff !important; 
-            border-color: rgba(80, 160, 255, 0.5) !important; 
-            background: transparent !important; 
-            transform: translate(-1px, 0px) !important; 
-            box-shadow: none !important; 
-        }
+
         #MainMenu, footer { visibility: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
-# ── Constants ──────────────────────────────────────────────────────────────────
+# ── Back button ────────────────────────────────────────────────────────────────
 st.markdown('<div class="back-btn">', unsafe_allow_html=True)
 if st.button("← Back", key="back"):
     st.switch_page("Main.py")
 st.markdown('</div>', unsafe_allow_html=True)
+
+# ── Constants ──────────────────────────────────────────────────────────────────
 COMPANIES = [
     "American Electric Power", "Comed", "Dayton Power & Light",
     "Duke Energy Ohio", "Dominion Energy", "Duquesne Light Company",
@@ -164,7 +177,7 @@ COMPANIES = [
 ]
 
 COMPANY_MAP = {
-    "American Electric Power":         "Amercian Electric Power",  # typo matches training
+    "American Electric Power":         "Amercian Electric Power",
     "Comed":                           "Comed",
     "Dayton Power & Light":            "Dayton Power & Light",
     "Duke Energy Ohio":                "Duke Energy Ohio",
@@ -177,8 +190,8 @@ COMPANY_MAP = {
 DATE_MIN = datetime(2016, 8, 1, 0)
 DATE_MAX = datetime(2018, 8, 3, 23)
 
-VIRIDIS = ["#3ecfcf","#3eabcf","#3e87cf","#5c6fcf",
-           "#7c56cf","#a056cf","#cf56b8","#cf5680"]
+VIRIDIS = ["#38bdf8","#7dd3fc","#a5f3fc","#67e8f9",
+           "#22d3ee","#06b6d4","#0891b2","#0e7490"]
 
 BASE_FEATURE_COLS = ["Hour","Year","Month","WeekDay","Day",
                      "Lag_1","Lag_2","Lag_3","Lag_24","Lag_168",
@@ -218,7 +231,7 @@ model   = load_model()
 df_full = load_data()
 
 # ── Header ─────────────────────────────────────────────────────────────────────
-st.markdown('<div class="page-title">Forecast vs Actual Results</div>', unsafe_allow_html=True)
+st.markdown('<div class="page-title">Forecast vs Actual</div>', unsafe_allow_html=True)
 st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
 st.markdown('<div class="page-subtitle">Model predictions on historical test data</div>', unsafe_allow_html=True)
 
@@ -301,12 +314,12 @@ if run:
         fig.add_trace(go.Scatter(
             x=combined_pred.index, y=combined_pred.values, mode="lines",
             name="All PJM — Predicted",
-            line=dict(color="#4db8ff", width=2),
+            line=dict(color="#7dd4fc", width=2),
         ))
         fig.add_trace(go.Scatter(
             x=combined_true.index, y=combined_true.values, mode="lines",
             name="All PJM — Actual",
-            line=dict(color="rgba(255,90,90,0.9)", width=2.5, dash="dash"),
+            line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
         ))
 
     # ── All Companies Separated or Single Company ─────────────────────────────
@@ -339,43 +352,44 @@ if run:
                 fig.add_trace(go.Scatter(
                     x=dt_idx, y=y_true, mode="lines",
                     name=f"{company_label} — Actual",
-                    line=dict(color="rgba(255,90,90,0.75)", width=2, dash="dash"),
+                    line=dict(color="rgba(255,100,100,0.7)", width=2, dash="dash"),
                 ))
             else:
                 fig.add_trace(go.Scatter(
                     x=dt_idx, y=y_pred, mode="lines",
                     name="Predicted",
-                    line=dict(color="#4db8ff", width=2),
+                    line=dict(color="#7dd4fc", width=2),
                 ))
                 fig.add_trace(go.Scatter(
                     x=dt_idx, y=y_true, mode="lines",
                     name="Actual",
-                    line=dict(color="rgba(255,90,90,0.9)", width=2.5, dash="dash"),
+                    line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
                 ))
 
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(8, 18, 40, 0.9)",
-        font=dict(family="Lato, sans-serif", color="#7ab0e8", size=11),
+        plot_bgcolor="rgba(4, 14, 38, 0.95)",
+        font=dict(family="DM Sans, sans-serif", color="#93c5fd", size=11),
         legend=dict(
-            bgcolor="rgba(5,12,30,0.85)",
-            bordercolor="rgba(80,150,255,0.15)",
+            bgcolor="rgba(2, 8, 25, 0.9)",
+            bordercolor="rgba(100, 170, 255, 0.15)",
             borderwidth=1,
-            font=dict(size=10, color="#99c0f0"),
+            font=dict(size=10, color="#bfdbfe"),
             orientation="h",
             yanchor="bottom", y=1.01,
             xanchor="left",   x=0,
         ),
         xaxis=dict(
-            gridcolor="rgba(80,150,255,0.07)",
-            linecolor="rgba(80,150,255,0.2)",
-            tickfont=dict(color="#5a88cc", size=10),
+            gridcolor="rgba(100, 170, 255, 0.06)",
+            linecolor="rgba(100, 170, 255, 0.18)",
+            tickfont=dict(color="#4a7fc0", size=10),
             tickformat="%b %Y",
-            rangeslider=dict(visible=True, bgcolor="rgba(8,18,40,0.6)", thickness=0.03),
+            hoverformat="%Y-%m-%d %H:00",
+            rangeslider=dict(visible=True, bgcolor="rgba(4,14,38,0.7)", thickness=0.03),
             rangeselector=dict(
-                bgcolor="rgba(8,18,40,0.95)",
+                bgcolor="rgba(4,14,38,0.95)",
                 activecolor="rgba(50,130,255,0.45)",
-                bordercolor="rgba(80,150,255,0.2)",
+                bordercolor="rgba(100,170,255,0.2)",
                 font=dict(color="#7ab0e8", size=10),
                 buttons=[
                     dict(count=1,  label="1M", step="month", stepmode="backward"),
@@ -387,13 +401,18 @@ if run:
             ),
         ),
         yaxis=dict(
-            gridcolor="rgba(80,150,255,0.07)",
-            linecolor="rgba(80,150,255,0.2)",
-            tickfont=dict(color="#5a88cc", size=10),
+            gridcolor="rgba(100, 170, 255, 0.06)",
+            linecolor="rgba(100, 170, 255, 0.18)",
+            tickfont=dict(color="#4a7fc0", size=10),
             title="Energy Consumption (MW)",
-            title_font=dict(size=10, color="rgba(120,170,255,0.45)"),
+            title_font=dict(size=10, color="rgba(140, 200, 255, 0.38)"),
         ),
         hovermode="x unified",
+        hoverlabel=dict(
+            bgcolor="rgba(2, 8, 28, 0.95)",
+            bordercolor="rgba(100, 170, 255, 0.25)",
+            font=dict(family="DM Sans, sans-serif", size=11, color="#e0f0ff"),
+        ),
         margin=dict(l=8, r=8, t=36, b=40),
         height=480,
     )
@@ -434,9 +453,9 @@ if run:
 
 else:
     st.markdown("""
-        <div style="text-align:center;padding:3.5rem 2rem;font-family:'Lato',sans-serif;
-                    color:rgba(140,190,255,0.25);font-size:0.8rem;letter-spacing:0.2em;
-                    text-transform:uppercase;border:1px dashed rgba(80,150,255,0.12);border-radius:2px;">
+        <div style="text-align:center;padding:3.5rem 2rem;font-family:'DM Sans',sans-serif;
+                    color:rgba(140,200,255,0.18);font-size:0.72rem;letter-spacing:0.25em;
+                    text-transform:uppercase;border:1px solid rgba(100,170,255,0.08);border-radius:1px;">
             Configure inputs above and click Run Forecast
         </div>
     """, unsafe_allow_html=True)
