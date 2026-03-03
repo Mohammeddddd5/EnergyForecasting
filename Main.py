@@ -100,4 +100,5 @@ with col2:
         st.switch_page("pages/TestDataForecast.py")
     st.write("")
     if st.button("Custom Forecasting", use_container_width=True):
-        st.switch_page("pages/CustomDataForecast.py")
+
+        st.switch_page("CustomDataForecast.py")
