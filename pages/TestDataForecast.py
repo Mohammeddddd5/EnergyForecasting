@@ -7,16 +7,29 @@ from sklearn.metrics import mean_squared_error, r2_score
 from datetime import datetime
 import os
 
-st.set_page_config(page_title="Energy Forecast — Predictions", layout="wide")
+st.set_page_config(
+    page_title="Energy Forecast — Predictions",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
         .stApp { background: #020a18; }
         html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
         header[data-testid="stHeader"] { background: transparent !important; }
-        button[data-testid="collapsedControl"] { opacity: 0 !important; pointer-events: none !important; }
+
+        /* ── Sidebar nuclear option ── */
+        [data-testid="stSidebar"] { display: none !important; width: 0px !important; height: 0px !important; }
+        [data-testid="stSidebar"] > div { display: none !important; }
+        section[data-testid="stSidebar"] { display: none !important; }
+        [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+        button[data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; }
+        .css-1lcbmhc, .css-1d391kg, .css-hxt7ib, .css-17eq0hr { display: none !important; }
+        div[data-testid="stSidebarNav"] { display: none !important; }
+        #MainMenu { visibility: hidden !important; display: none !important; }
 
         .block-container {
             padding-top: 2.8rem !important;
@@ -26,19 +39,20 @@ st.markdown("""
         }
 
         .page-title {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 3.2rem;
-            font-weight: 600;
+            font-family: 'Raleway', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
             color: #f0f7ff;
             text-align: center;
             letter-spacing: 0.02em;
             line-height: 1.1;
             margin-bottom: 0;
+            text-shadow: 0 2px 14px rgba(0,0,0,0.5);
         }
 
         .page-subtitle {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.72rem;
+            font-size: 0.92rem;
             font-weight: 300;
             color: rgba(180, 215, 255, 0.45);
             letter-spacing: 0.35em;
@@ -57,22 +71,22 @@ st.markdown("""
 
         .section-label {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.65rem;
+            font-size: 0.82rem;
             font-weight: 500;
-            letter-spacing: 0.32em;
+            letter-spacing: 0.28em;
             text-transform: uppercase;
-            color: rgba(140, 200, 255, 0.38);
+            color: rgba(140, 200, 255, 0.45);
             text-align: center;
             margin-bottom: 0.7rem;
         }
 
         label[data-testid="stWidgetLabel"] p {
             font-family: 'DM Sans', sans-serif !important;
-            font-size: 0.65rem !important;
+            font-size: 0.82rem !important;
             font-weight: 500 !important;
-            letter-spacing: 0.22em !important;
+            letter-spacing: 0.18em !important;
             text-transform: uppercase !important;
-            color: rgba(160, 210, 255, 0.5) !important;
+            color: rgba(160, 210, 255, 0.6) !important;
         }
 
         .metric-row {
@@ -92,32 +106,32 @@ st.markdown("""
         .metric-cell:last-child { border-right: none; }
         .metric-label {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.62rem;
+            font-size: 0.78rem;
             font-weight: 500;
-            letter-spacing: 0.25em;
+            letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: rgba(140, 200, 255, 0.45);
+            color: rgba(140, 200, 255, 0.5);
             margin-bottom: 0.5rem;
         }
         .metric-value {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 2.1rem;
-            font-weight: 600;
+            font-family: 'Raleway', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 700;
             color: #eaf4ff;
             line-height: 1;
         }
         .metric-sub {
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.6rem;
+            font-size: 0.72rem;
             font-weight: 300;
-            color: rgba(140, 200, 255, 0.28);
+            color: rgba(140, 200, 255, 0.35);
             letter-spacing: 0.1em;
             margin-top: 0.3rem;
         }
 
         .back-btn > button {
             font-family: 'DM Sans', sans-serif !important;
-            font-size: 0.62rem !important;
+            font-size: 0.75rem !important;
             font-weight: 400 !important;
             letter-spacing: 0.2em !important;
             text-transform: uppercase !important;
@@ -138,10 +152,10 @@ st.markdown("""
         }
 
         .stButton > button {
-            font-family: 'DM Sans', sans-serif !important;
-            font-size: 0.68rem !important;
-            font-weight: 500 !important;
-            letter-spacing: 0.25em !important;
+            font-family: 'Raleway', sans-serif !important;
+            font-size: 0.88rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.22em !important;
             text-transform: uppercase !important;
             color: #cce8ff !important;
             background: rgba(30, 90, 200, 0.18) !important;
@@ -159,7 +173,7 @@ st.markdown("""
             box-shadow: 3px 3px 0px rgba(100, 170, 255, 0.15) !important;
         }
 
-        #MainMenu, footer { visibility: hidden; }
+        footer { visibility: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -283,106 +297,100 @@ if run:
     fig = go.Figure()
     all_actual, all_predicted = [], []
 
-    # ── All PJM Combined ──────────────────────────────────────────────────────
-    if selected_company == "All PJM (Combined)":
-        combined_pred = pd.Series(dtype=float)
-        combined_true = pd.Series(dtype=float)
+    with st.spinner("Running forecast..."):
 
-        for company_label in companies_to_plot:
-            original_name = COMPANY_MAP[company_label]
-            df_c = df_range[df_range["Company"] == original_name].copy()
-            if df_c.empty:
-                continue
+        # ── All PJM Combined ──────────────────────────────────────────────────
+        if selected_company == "All PJM (Combined)":
+            combined_pred = pd.Series(dtype=float)
+            combined_true = pd.Series(dtype=float)
 
-            df_encoded = pd.get_dummies(df_c, columns=["Company"])
-            for col in COMPANY_COLS:
-                if col not in df_encoded.columns:
-                    df_encoded[col] = 0
+            for company_label in companies_to_plot:
+                original_name = COMPANY_MAP[company_label]
+                df_c = df_range[df_range["Company"] == original_name].copy()
+                if df_c.empty:
+                    continue
 
-            y_pred_c = np.exp(np.clip(model.predict(df_encoded[ALL_FEATURE_COLS]), -500, 500))
-            y_true_c = df_c["Energy_Consumption"].values
+                df_encoded = pd.get_dummies(df_c, columns=["Company"])
+                for col in COMPANY_COLS:
+                    if col not in df_encoded.columns:
+                        df_encoded[col] = 0
 
-            pred_series = pd.Series(y_pred_c, index=df_c["_dt"].values)
-            true_series = pd.Series(y_true_c, index=df_c["_dt"].values)
+                y_pred_c = np.exp(np.clip(model.predict(df_encoded[ALL_FEATURE_COLS]), -500, 500))
+                y_true_c = df_c["Energy_Consumption"].values
 
-            combined_pred = combined_pred.add(pred_series, fill_value=0)
-            combined_true = combined_true.add(true_series, fill_value=0)
+                pred_series = pd.Series(y_pred_c, index=df_c["_dt"].values)
+                true_series = pd.Series(y_true_c, index=df_c["_dt"].values)
 
-        all_actual.extend(combined_true.values)
-        all_predicted.extend(combined_pred.values)
+                combined_pred = combined_pred.add(pred_series, fill_value=0)
+                combined_true = combined_true.add(true_series, fill_value=0)
 
-        fig.add_trace(go.Scatter(
-            x=combined_pred.index, y=combined_pred.values, mode="lines",
-            name="All PJM — Predicted",
-            line=dict(color="#7dd4fc", width=2),
-        ))
-        fig.add_trace(go.Scatter(
-            x=combined_true.index, y=combined_true.values, mode="lines",
-            name="All PJM — Actual",
-            line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
-        ))
+            all_actual.extend(combined_true.values)
+            all_predicted.extend(combined_pred.values)
 
-    # ── All Companies Separated or Single Company ─────────────────────────────
-    else:
-        for i, company_label in enumerate(companies_to_plot):
-            original_name = COMPANY_MAP[company_label]
-            df_c = df_range[df_range["Company"] == original_name].copy()
-            if df_c.empty:
-                continue
+            fig.add_trace(go.Scatter(
+                x=combined_pred.index, y=combined_pred.values, mode="lines",
+                name="Predicted", showlegend=False,
+                line=dict(color="#7dd4fc", width=2),
+            ))
+            fig.add_trace(go.Scatter(
+                x=combined_true.index, y=combined_true.values, mode="lines",
+                name="Actual", showlegend=False,
+                line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
+            ))
 
-            df_encoded = pd.get_dummies(df_c, columns=["Company"])
-            for col in COMPANY_COLS:
-                if col not in df_encoded.columns:
-                    df_encoded[col] = 0
+        # ── All Companies Separated or Single Company ─────────────────────────
+        else:
+            for i, company_label in enumerate(companies_to_plot):
+                original_name = COMPANY_MAP[company_label]
+                df_c = df_range[df_range["Company"] == original_name].copy()
+                if df_c.empty:
+                    continue
 
-            y_true = df_c["Energy_Consumption"].values
-            y_pred = np.exp(np.clip(model.predict(df_encoded[ALL_FEATURE_COLS]), -500, 500))
+                df_encoded = pd.get_dummies(df_c, columns=["Company"])
+                for col in COMPANY_COLS:
+                    if col not in df_encoded.columns:
+                        df_encoded[col] = 0
 
-            all_actual.extend(y_true)
-            all_predicted.extend(y_pred)
-            dt_idx = df_c["_dt"]
+                y_true = df_c["Energy_Consumption"].values
+                y_pred = np.exp(np.clip(model.predict(df_encoded[ALL_FEATURE_COLS]), -500, 500))
 
-            if selected_company == "All Companies (Separated)":
-                fig.add_trace(go.Scatter(
-                    x=dt_idx, y=y_pred, mode="lines",
-                    name=f"{company_label} — Predicted",
-                    line=dict(color=VIRIDIS[i % len(VIRIDIS)], width=1.5),
-                    opacity=0.9,
-                ))
-                fig.add_trace(go.Scatter(
-                    x=dt_idx, y=y_true, mode="lines",
-                    name=f"{company_label} — Actual",
-                    line=dict(color="rgba(255,100,100,0.7)", width=2, dash="dash"),
-                ))
-            else:
-                fig.add_trace(go.Scatter(
-                    x=dt_idx, y=y_pred, mode="lines",
-                    name="Predicted",
-                    line=dict(color="#7dd4fc", width=2),
-                ))
-                fig.add_trace(go.Scatter(
-                    x=dt_idx, y=y_true, mode="lines",
-                    name="Actual",
-                    line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
-                ))
+                all_actual.extend(y_true)
+                all_predicted.extend(y_pred)
+                dt_idx = df_c["_dt"]
+
+                if selected_company == "All Companies (Separated)":
+                    fig.add_trace(go.Scatter(
+                        x=dt_idx, y=y_pred, mode="lines",
+                        name=f"{company_label} — Predicted", showlegend=False,
+                        line=dict(color=VIRIDIS[i % len(VIRIDIS)], width=1.5),
+                        opacity=0.9,
+                    ))
+                    fig.add_trace(go.Scatter(
+                        x=dt_idx, y=y_true, mode="lines",
+                        name=f"{company_label} — Actual", showlegend=False,
+                        line=dict(color="rgba(255,100,100,0.7)", width=2, dash="dash"),
+                    ))
+                else:
+                    fig.add_trace(go.Scatter(
+                        x=dt_idx, y=y_pred, mode="lines",
+                        name="Predicted", showlegend=False,
+                        line=dict(color="#7dd4fc", width=2),
+                    ))
+                    fig.add_trace(go.Scatter(
+                        x=dt_idx, y=y_true, mode="lines",
+                        name="Actual", showlegend=False,
+                        line=dict(color="rgba(255,100,100,0.85)", width=2.5, dash="dash"),
+                    ))
 
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(4, 14, 38, 0.95)",
-        font=dict(family="DM Sans, sans-serif", color="#93c5fd", size=11),
-        legend=dict(
-            bgcolor="rgba(2, 8, 25, 0.9)",
-            bordercolor="rgba(100, 170, 255, 0.15)",
-            borderwidth=1,
-            font=dict(size=10, color="#bfdbfe"),
-            orientation="h",
-            yanchor="bottom", y=1.01,
-            xanchor="left",   x=0,
-        ),
+        showlegend=False,
+        font=dict(family="DM Sans, sans-serif", color="#93c5fd", size=12),
         xaxis=dict(
             gridcolor="rgba(100, 170, 255, 0.06)",
             linecolor="rgba(100, 170, 255, 0.18)",
-            tickfont=dict(color="#4a7fc0", size=10),
+            tickfont=dict(color="#4a7fc0", size=12),
             tickformat="%b %Y",
             hoverformat="%Y-%m-%d %H:00",
             rangeslider=dict(visible=True, bgcolor="rgba(4,14,38,0.7)", thickness=0.03),
@@ -390,7 +398,7 @@ if run:
                 bgcolor="rgba(4,14,38,0.95)",
                 activecolor="rgba(50,130,255,0.45)",
                 bordercolor="rgba(100,170,255,0.2)",
-                font=dict(color="#7ab0e8", size=10),
+                font=dict(color="#7ab0e8", size=12),
                 buttons=[
                     dict(count=1,  label="1M", step="month", stepmode="backward"),
                     dict(count=3,  label="3M", step="month", stepmode="backward"),
@@ -403,17 +411,17 @@ if run:
         yaxis=dict(
             gridcolor="rgba(100, 170, 255, 0.06)",
             linecolor="rgba(100, 170, 255, 0.18)",
-            tickfont=dict(color="#4a7fc0", size=10),
+            tickfont=dict(color="#4a7fc0", size=12),
             title="Energy Consumption (MW)",
-            title_font=dict(size=10, color="rgba(140, 200, 255, 0.38)"),
+            title_font=dict(size=12, color="rgba(140, 200, 255, 0.45)"),
         ),
         hovermode="x unified",
         hoverlabel=dict(
             bgcolor="rgba(2, 8, 28, 0.95)",
             bordercolor="rgba(100, 170, 255, 0.25)",
-            font=dict(family="DM Sans, sans-serif", size=11, color="#e0f0ff"),
+            font=dict(family="DM Sans, sans-serif", size=12, color="#e0f0ff"),
         ),
-        margin=dict(l=8, r=8, t=36, b=40),
+        margin=dict(l=8, r=8, t=8, b=40),
         height=480,
     )
 
@@ -454,7 +462,7 @@ if run:
 else:
     st.markdown("""
         <div style="text-align:center;padding:3.5rem 2rem;font-family:'DM Sans',sans-serif;
-                    color:rgba(140,200,255,0.18);font-size:0.72rem;letter-spacing:0.25em;
+                    color:rgba(140,200,255,0.18);font-size:0.85rem;letter-spacing:0.25em;
                     text-transform:uppercase;border:1px solid rgba(100,170,255,0.08);border-radius:1px;">
             Configure inputs above and click Run Forecast
         </div>

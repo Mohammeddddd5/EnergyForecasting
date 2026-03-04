@@ -6,57 +6,246 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import os
 
-st.set_page_config(page_title="Energy Forecast - Custom", layout="wide")
+st.set_page_config(
+    page_title="Energy Forecast - Custom",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;700;800&family=DM+Sans:wght@300;400;500&display=swap');
 
         .stApp { background: #020a18; }
         html, body, [class*="css"] { font-family: 'DM Sans', sans-serif; }
         header[data-testid="stHeader"] { background: transparent !important; }
-        button[data-testid="collapsedControl"] { opacity: 0 !important; pointer-events: none !important; }
-        .block-container { padding-top: 2.8rem !important; padding-left: 2.5rem !important; padding-right: 2.5rem !important; max-width: 1100px !important; }
 
-        .page-title { font-family: 'Cormorant Garamond', serif; font-size: 3.2rem; font-weight: 600; color: #f0f7ff; text-align: center; letter-spacing: 0.02em; line-height: 1.1; margin-bottom: 0; }
-        .page-subtitle { font-family: 'DM Sans', sans-serif; font-size: 0.72rem; font-weight: 300; color: rgba(180, 215, 255, 0.45); letter-spacing: 0.35em; text-transform: uppercase; text-align: center; margin-top: 0.5rem; margin-bottom: 0.6rem; }
-        .divider { width: 32px; height: 1px; background: rgba(140, 200, 255, 0.35); margin: 0.7rem auto 1.6rem auto; }
-        .section-label { font-family: 'DM Sans', sans-serif; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.32em; text-transform: uppercase; color: rgba(140, 200, 255, 0.38); text-align: center; margin-bottom: 0.7rem; }
+        /* ── Sidebar nuclear option ── */
+        [data-testid="stSidebar"] { display: none !important; width: 0px !important; height: 0px !important; }
+        [data-testid="stSidebar"] > div { display: none !important; }
+        section[data-testid="stSidebar"] { display: none !important; }
+        [data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; pointer-events: none !important; }
+        button[data-testid="collapsedControl"] { display: none !important; visibility: hidden !important; }
+        .css-1lcbmhc, .css-1d391kg, .css-hxt7ib, .css-17eq0hr { display: none !important; }
+        div[data-testid="stSidebarNav"] { display: none !important; }
+        #MainMenu { visibility: hidden !important; display: none !important; }
 
-        label[data-testid="stWidgetLabel"] p { font-family: 'DM Sans', sans-serif !important; font-size: 0.65rem !important; font-weight: 500 !important; letter-spacing: 0.22em !important; text-transform: uppercase !important; color: rgba(160, 210, 255, 0.5) !important; }
+        .block-container {
+            padding-top: 2.8rem !important;
+            padding-left: 2.5rem !important;
+            padding-right: 2.5rem !important;
+            max-width: 1100px !important;
+        }
 
-        .warning-wrapper { display: flex; align-items: center; justify-content: center; margin-bottom: 1.8rem; gap: 0.55rem; }
+        .page-title {
+            font-family: 'Raleway', sans-serif;
+            font-size: 4rem;
+            font-weight: 800;
+            color: #f0f7ff;
+            text-align: center;
+            letter-spacing: 0.02em;
+            line-height: 1.1;
+            margin-bottom: 0;
+            text-shadow: 0 2px 14px rgba(0,0,0,0.5);
+        }
+
+        .page-subtitle {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 300;
+            color: rgba(180, 215, 255, 0.45);
+            letter-spacing: 0.35em;
+            text-transform: uppercase;
+            text-align: center;
+            margin-top: 0.5rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .divider {
+            width: 32px;
+            height: 1px;
+            background: rgba(140, 200, 255, 0.35);
+            margin: 0.7rem auto 1.6rem auto;
+        }
+
+        .section-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem;
+            font-weight: 500;
+            letter-spacing: 0.28em;
+            text-transform: uppercase;
+            color: rgba(140, 200, 255, 0.45);
+            text-align: center;
+            margin-bottom: 0.7rem;
+        }
+
+        label[data-testid="stWidgetLabel"] p {
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.82rem !important;
+            font-weight: 500 !important;
+            letter-spacing: 0.18em !important;
+            text-transform: uppercase !important;
+            color: rgba(160, 210, 255, 0.6) !important;
+        }
+
+        .warning-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.8rem;
+            gap: 0.55rem;
+        }
         .warning-icon { position: relative; display: inline-block; cursor: pointer; }
-        .warning-icon .icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; background: rgba(255, 190, 60, 0.1); border: 1px solid rgba(255, 190, 60, 0.55); border-radius: 50%; color: rgba(255, 205, 90, 0.9); font-size: 0.65rem; font-weight: 700; font-family: 'DM Sans', sans-serif; }
-        .warning-icon .tooltip { visibility: hidden; opacity: 0; width: 360px; background: rgba(5, 15, 40, 0.98); border: 1px solid rgba(255, 190, 60, 0.25); color: rgba(255, 215, 130, 0.82); font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 300; line-height: 1.7; padding: 0.9rem 1.1rem; border-radius: 2px; position: absolute; z-index: 999; top: 140%; left: 50%; transform: translateX(-50%); transition: opacity 0.2s ease; pointer-events: none; }
-        .warning-icon .tooltip::before { content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-bottom-color: rgba(255, 190, 60, 0.25); }
+        .warning-icon .icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px; height: 20px;
+            background: rgba(255, 190, 60, 0.1);
+            border: 1px solid rgba(255, 190, 60, 0.55);
+            border-radius: 50%;
+            color: rgba(255, 205, 90, 0.9);
+            font-size: 0.72rem;
+            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .warning-icon .tooltip {
+            visibility: hidden; opacity: 0;
+            width: 360px;
+            background: rgba(5, 15, 40, 0.98);
+            border: 1px solid rgba(255, 190, 60, 0.25);
+            color: rgba(255, 215, 130, 0.82);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem; font-weight: 300;
+            line-height: 1.7;
+            padding: 0.9rem 1.1rem;
+            border-radius: 2px;
+            position: absolute; z-index: 999;
+            top: 140%; left: 50%;
+            transform: translateX(-50%);
+            transition: opacity 0.2s ease;
+            pointer-events: none;
+        }
+        .warning-icon .tooltip::before {
+            content: '';
+            position: absolute;
+            bottom: 100%; left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-bottom-color: rgba(255, 190, 60, 0.25);
+        }
         .warning-icon:hover .tooltip { visibility: visible; opacity: 1; }
-        .warning-text { font-family: 'DM Sans', sans-serif; font-size: 0.7rem; font-weight: 300; color: rgba(255, 200, 80, 0.55); letter-spacing: 0.06em; }
+        .warning-text {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 300;
+            color: rgba(255, 200, 80, 0.6);
+            letter-spacing: 0.06em;
+        }
 
-        .metric-row { display: flex; border: 1px solid rgba(100, 170, 255, 0.12); border-radius: 1px; overflow: hidden; margin-top: 1rem; }
-        .metric-cell { flex: 1; padding: 1.3rem 1.6rem; background: rgba(10, 30, 70, 0.35); border-right: 1px solid rgba(100, 170, 255, 0.1); text-align: center; }
+        .metric-row {
+            display: flex;
+            border: 1px solid rgba(100, 170, 255, 0.12);
+            border-radius: 1px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .metric-cell {
+            flex: 1;
+            padding: 1.3rem 1.6rem;
+            background: rgba(10, 30, 70, 0.35);
+            border-right: 1px solid rgba(100, 170, 255, 0.1);
+            text-align: center;
+        }
         .metric-cell:last-child { border-right: none; }
-        .metric-label { font-family: 'DM Sans', sans-serif; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(140, 200, 255, 0.45); margin-bottom: 0.5rem; }
-        .metric-value { font-family: 'Cormorant Garamond', serif; font-size: 2.1rem; font-weight: 600; color: #eaf4ff; line-height: 1; }
-        .metric-sub { font-family: 'DM Sans', sans-serif; font-size: 0.6rem; font-weight: 300; color: rgba(140, 200, 255, 0.28); letter-spacing: 0.1em; margin-top: 0.3rem; }
+        .metric-label {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 500;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: rgba(140, 200, 255, 0.5);
+            margin-bottom: 0.5rem;
+        }
+        .metric-value {
+            font-family: 'Raleway', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: #eaf4ff;
+            line-height: 1;
+        }
+        .metric-sub {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 300;
+            color: rgba(140, 200, 255, 0.35);
+            letter-spacing: 0.1em;
+            margin-top: 0.3rem;
+        }
 
-        .back-btn > button { font-family: 'DM Sans', sans-serif !important; font-size: 0.62rem !important; font-weight: 400 !important; letter-spacing: 0.2em !important; text-transform: uppercase !important; color: rgba(140, 200, 255, 0.4) !important; background: transparent !important; border: 1px solid rgba(100, 170, 255, 0.15) !important; border-radius: 0px !important; padding: 0.35rem 0.9rem !important; transition: all 0.2s ease !important; box-shadow: none !important; }
-        .back-btn > button:hover { color: #d0eaff !important; border-color: rgba(100, 170, 255, 0.4) !important; background: rgba(100, 170, 255, 0.05) !important; transform: none !important; box-shadow: none !important; }
+        .back-btn > button {
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.75rem !important;
+            font-weight: 400 !important;
+            letter-spacing: 0.2em !important;
+            text-transform: uppercase !important;
+            color: rgba(140, 200, 255, 0.4) !important;
+            background: transparent !important;
+            border: 1px solid rgba(100, 170, 255, 0.15) !important;
+            border-radius: 0px !important;
+            padding: 0.35rem 0.9rem !important;
+            transition: all 0.2s ease !important;
+            box-shadow: none !important;
+        }
+        .back-btn > button:hover {
+            color: #d0eaff !important;
+            border-color: rgba(100, 170, 255, 0.4) !important;
+            background: rgba(100, 170, 255, 0.05) !important;
+            transform: none !important;
+            box-shadow: none !important;
+        }
 
-        .stButton > button { font-family: 'DM Sans', sans-serif !important; font-size: 0.68rem !important; font-weight: 500 !important; letter-spacing: 0.25em !important; text-transform: uppercase !important; color: #cce8ff !important; background: rgba(30, 90, 200, 0.18) !important; border: 1px solid rgba(100, 170, 255, 0.4) !important; border-radius: 0px !important; padding: 0.8rem 1.5rem !important; transition: all 0.22s ease !important; box-shadow: none !important; }
-        .stButton > button:hover { color: #ffffff !important; background: rgba(60, 130, 255, 0.28) !important; border-color: rgba(160, 210, 255, 0.8) !important; transform: translate(-2px, -2px) !important; box-shadow: 3px 3px 0px rgba(100, 170, 255, 0.15) !important; }
+        .stButton > button {
+            font-family: 'Raleway', sans-serif !important;
+            font-size: 0.88rem !important;
+            font-weight: 700 !important;
+            letter-spacing: 0.22em !important;
+            text-transform: uppercase !important;
+            color: #cce8ff !important;
+            background: rgba(30, 90, 200, 0.18) !important;
+            border: 1px solid rgba(100, 170, 255, 0.4) !important;
+            border-radius: 0px !important;
+            padding: 0.8rem 1.5rem !important;
+            transition: all 0.22s ease !important;
+            box-shadow: none !important;
+        }
+        .stButton > button:hover {
+            color: #ffffff !important;
+            background: rgba(60, 130, 255, 0.28) !important;
+            border-color: rgba(160, 210, 255, 0.8) !important;
+            transform: translate(-2px, -2px) !important;
+            box-shadow: 3px 3px 0px rgba(100, 170, 255, 0.15) !important;
+        }
 
-        div[data-testid="stCaptionContainer"] p { font-family: 'DM Sans', sans-serif !important; font-size: 0.65rem !important; color: rgba(140, 200, 255, 0.35) !important; text-align: center !important; letter-spacing: 0.08em !important; }
+        div[data-testid="stCaptionContainer"] p {
+            font-family: 'DM Sans', sans-serif !important;
+            font-size: 0.78rem !important;
+            color: rgba(140, 200, 255, 0.35) !important;
+            text-align: center !important;
+            letter-spacing: 0.08em !important;
+        }
 
-        #MainMenu, footer { visibility: hidden; }
+        footer { visibility: hidden; }
     </style>
 """, unsafe_allow_html=True)
 
+# ── Back button ────────────────────────────────────────────────────────────────
 st.markdown('<div class="back-btn">', unsafe_allow_html=True)
 if st.button("← Back", key="back"):
     st.switch_page("streamlit_app.py")
 st.markdown('</div>', unsafe_allow_html=True)
 
+# ── Constants ──────────────────────────────────────────────────────────────────
 COMPANIES = [
     "American Electric Power", "Comed", "Dayton Power & Light",
     "Duke Energy Ohio", "Dominion Energy", "Duquesne Light Company",
@@ -89,6 +278,7 @@ MAX_HOURS      = 8760
 DURATION_UNITS = ["Hour(s)", "Day(s)", "Week(s)", "Month(s)", "Year(s)"]
 DURATION_HOURS = {"Hour(s)": 1, "Day(s)": 24, "Week(s)": 168, "Month(s)": 720, "Year(s)": 8760}
 
+# ── Load resources ─────────────────────────────────────────────────────────────
 @st.cache_resource
 def load_model():
     base = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -108,6 +298,7 @@ def load_data():
 model   = load_model()
 df_full = load_data()
 
+# ── Forecast function ──────────────────────────────────────────────────────────
 def forecast_company(company_original, chain_start, end_dt, df_seed, model):
     df_c = df_seed[df_seed["Company"] == company_original].copy()
     df_c = df_c.sort_values("_dt").reset_index(drop=True)
@@ -169,6 +360,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
+# ── Controls ───────────────────────────────────────────────────────────────────
 st.markdown('<div class="section-label">Forecast Settings</div>', unsafe_allow_html=True)
 
 c1, c2, c3, c4, c5 = st.columns([2, 1, 1, 1, 2])
@@ -198,6 +390,7 @@ with btn_col:
     run = st.button("Run Forecast", use_container_width=True)
 st.markdown("<br>", unsafe_allow_html=True)
 
+# ── Results ────────────────────────────────────────────────────────────────────
 if run:
     start_dt    = datetime.combine(start_date, datetime.min.time()).replace(hour=start_hour)
     total_hours = min(int(duration_val * DURATION_HOURS[duration_unit]), MAX_HOURS)
@@ -224,7 +417,7 @@ if run:
             peak_dt         = combined.index[combined.values.argmax()]
             fig.add_trace(go.Scatter(
                 x=combined.index, y=combined.values, mode="lines",
-                name="All PJM — Forecast",
+                name="All PJM — Forecast", showlegend=False,
                 line=dict(color="#7dd4fc", width=2),
             ))
         else:
@@ -235,27 +428,19 @@ if run:
             peak_dt          = dts[int(np.argmax(vals))]
             fig.add_trace(go.Scatter(
                 x=dts, y=vals, mode="lines",
-                name=f"{selected_company} — Forecast",
+                name=f"{selected_company} — Forecast", showlegend=False,
                 line=dict(color="#7dd4fc", width=2),
             ))
 
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(4, 14, 38, 0.95)",
-        font=dict(family="DM Sans, sans-serif", color="#93c5fd", size=11),
-        legend=dict(
-            bgcolor="rgba(2, 8, 25, 0.9)",
-            bordercolor="rgba(100, 170, 255, 0.15)",
-            borderwidth=1,
-            font=dict(size=10, color="#bfdbfe"),
-            orientation="h",
-            yanchor="bottom", y=1.01,
-            xanchor="left",   x=0,
-        ),
+        showlegend=False,
+        font=dict(family="DM Sans, sans-serif", color="#93c5fd", size=12),
         xaxis=dict(
             gridcolor="rgba(100, 170, 255, 0.06)",
             linecolor="rgba(100, 170, 255, 0.18)",
-            tickfont=dict(color="#4a7fc0", size=10),
+            tickfont=dict(color="#4a7fc0", size=12),
             tickformat="%b %Y",
             hoverformat="%Y-%m-%d %H:00",
             rangeslider=dict(visible=True, bgcolor="rgba(4,14,38,0.7)", thickness=0.03),
@@ -263,17 +448,17 @@ if run:
         yaxis=dict(
             gridcolor="rgba(100, 170, 255, 0.06)",
             linecolor="rgba(100, 170, 255, 0.18)",
-            tickfont=dict(color="#4a7fc0", size=10),
+            tickfont=dict(color="#4a7fc0", size=12),
             title="Predicted Consumption (MW)",
-            title_font=dict(size=10, color="rgba(140, 200, 255, 0.38)"),
+            title_font=dict(size=12, color="rgba(140, 200, 255, 0.45)"),
         ),
         hovermode="x unified",
         hoverlabel=dict(
             bgcolor="rgba(2, 8, 28, 0.95)",
             bordercolor="rgba(100, 170, 255, 0.25)",
-            font=dict(family="DM Sans, sans-serif", size=11, color="#e0f0ff"),
+            font=dict(family="DM Sans, sans-serif", size=12, color="#e0f0ff"),
         ),
-        margin=dict(l=8, r=8, t=36, b=40),
+        margin=dict(l=8, r=8, t=8, b=40),
         height=480,
     )
 
@@ -291,7 +476,7 @@ if run:
                 </div>
                 <div class="metric-cell">
                     <div class="metric-label">Peak Consumption Hour</div>
-                    <div class="metric-value" style="font-size:1.3rem;">{pd.Timestamp(peak_dt).strftime("%Y-%m-%d %H:00")}</div>
+                    <div class="metric-value" style="font-size:1.5rem;">{pd.Timestamp(peak_dt).strftime("%Y-%m-%d %H:00")}</div>
                     <div class="metric-sub">Datetime of highest forecast</div>
                 </div>
                 <div class="metric-cell">
@@ -305,7 +490,7 @@ if run:
 else:
     st.markdown("""
         <div style="text-align:center;padding:3.5rem 2rem;font-family:'DM Sans',sans-serif;
-                    color:rgba(140,200,255,0.18);font-size:0.72rem;letter-spacing:0.25em;
+                    color:rgba(140,200,255,0.18);font-size:0.85rem;letter-spacing:0.25em;
                     text-transform:uppercase;border:1px solid rgba(100,170,255,0.08);border-radius:1px;">
             Configure inputs above and click Run Forecast
         </div>
